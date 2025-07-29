@@ -1,0 +1,79 @@
+target/
+# === BACKEND JAVA (MAVEN / SPRING BOOT) ===
+
+# Pasta de build
+target/
+
+# Logs
+*.log
+
+# Arquivos temporários
+*.tmp
+*.bak
+*.swp
+
+# Arquivos de configuração de execução
+*.launch
+*.classpath
+*.project
+.settings/
+
+# Arquivos gerados por ferramentas (ex: cobertura, jacoco)
+.coverage
+.jacoco*
+*.exec
+
+# Arquivos sensíveis e locais
+application-local.yml
+application-dev.yml
+.env
+*.secret
+*.key
+*.crt
+*.pem
+
+# === INTELLIJ IDEA ===
+
+# Diretório de configuração da IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Workspace do IntelliJ (gerado dinamicamente)
+.idea/workspace.xml
+.idea/usage.statistics.xml
+.idea/dictionaries
+.idea/httpRequests
+
+# Plugins, caches e outros
+out/
+.idea/modules.xml
+.idea/.name
+.idea/shelf/
+
+# === SISTEMA OPERACIONAL ===
+
+# Arquivos de sistema
+.DS_Store
+Thumbs.db
+ehthumbs.db
+*.bak
+
+# === NODE.JS / FRONTEND (caso esteja no mesmo monorepo) ===
+
+node_modules/
+dist/
+build/
+.angular/
+
+# IDEs e editores
+.vscode/
+*.code-workspace
+
+# === GIT ===
+
+# Ignorar arquivos de rebase e conflitos
+*.orig
+*.rej
+
