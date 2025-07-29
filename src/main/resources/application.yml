@@ -1,0 +1,175 @@
+# ================================================
+# Configuração da API de Consulta de Créditos ISSQN
+# Spring Boot 2.7.18 + Java 8 + PostgreSQL Docker
+# ================================================
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+  compression:
+    enabled: true
+  error:
+    include-message: always
+    include-binding-errors: always
+
+spring:
+  application:
+    name: ${APP_NAME:consulta-creditos-api}
+
+  # ================================================
+  # CONFIGURAÇÃO DO BANCO DE DADOS - POSTGRESQL DOCKER
+  # ================================================
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 20000
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      auto-commit: false
+
+  # ================================================
+  # CONFIGURAÇÃO JPA/HIBERNATE
+  # ================================================
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: ${SPRING_JPA_DDL_AUTO:validate}
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: ${SPRING_JPA_SHOW_SQL:true}
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        generate_statistics: false
+    open-in-view: false
+
+  # ================================================
+  # CONFIGURAÇÃO DO KAFKA
+  # ================================================
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 1
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP_ID:consulta-creditos}
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      properties:
+        spring.json.trusted.packages: "com.creditos.dto"
+
+  # ================================================
+  # CONFIGURAÇÃO DO FLYWAY
+  # ================================================
+  flyway:
+    enabled: false
+
+# ================================================
+# CONFIGURAÇÃO DE LOGS
+# ================================================
+logging:
+  level:
+    com.creditos: ${LOG_LEVEL_APP:DEBUG}
+    org.springframework.kafka: ${LOG_LEVEL_KAFKA:INFO}
+    org.hibernate.SQL: ${LOG_LEVEL_SQL:DEBUG}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${LOG_LEVEL_HIBERNATE:TRACE}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# ================================================
+# CONFIGURAÇÃO DO ACTUATOR
+# ================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+# ================================================
+# CONFIGURAÇÃO DO SWAGGER/OpenAPI
+# ================================================
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+    tagsSorter: alpha
+
+# ================================================
+# CONFIGURAÇÕES CUSTOMIZADAS DA APLICAÇÃO
+# ================================================
+app:
+  name: ${APP_NAME:API de Consulta de Créditos ISSQN}
+  version: ${APP_VERSION:1.0.0}
+  description: "Sistema para consulta de créditos constituídos de ISSQN"
+  kafka:
+    topics:
+      credito-consulta: "credito-consulta-topic"
+      auditoria: "auditoria-topic"
+
+---
+
+# ================================================
+# PERFIL DE PRODUÇÃO
+# ================================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:creditos_db}
+    username: ${POSTGRES_USER:creditos_user}
+    password: ${POSTGRES_PASSWORD:creditos_pass}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+logging:
+  level:
+    com.creditos: INFO
+    org.hibernate.SQL: WARN
+
+---
+
+# ================================================
+# PERFIL DOCKER (para containers)
+# ================================================
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/${POSTGRES_DB:creditos_db}
+    username: ${POSTGRES_USER:creditos_user}
+    password: ${POSTGRES_PASSWORD:creditos_pass}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+  kafka:
+    bootstrap-servers: kafka:9092
