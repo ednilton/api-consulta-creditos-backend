@@ -132,7 +132,8 @@ public class CreditoService {
             }
 
             String numeroNormalizado = ValidationUtils.normalizeString(numeroCredito);
-            boolean existe = creditoRepository.findByNumeroCredito(numeroNormalizado).isPresent();
+            List<Credito> creditos = creditoRepository.findByNumeroCredito(numeroNormalizado);
+            boolean existe = !creditos.isEmpty();
 
             logger.debug("Verificação de existência para crédito {}: {}", numeroCredito, existe);
             return existe;
@@ -464,15 +465,24 @@ public class CreditoService {
 
     /**
      * Busca um crédito específico por número
-     * Usa método existente do repository que retorna Optional
+     * Atualizado para usar o repository refatorado
      */
     private Credito buscarCreditoPorNumero(String numeroCredito) {
         String numeroNormalizado = ValidationUtils.normalizeString(numeroCredito);
-        return creditoRepository.findByNumeroCredito(numeroNormalizado)
-                .orElseThrow(() -> {
-                    LoggingUtils.logNenhumResultado(logger, "número do crédito", numeroCredito);
-                    return CreditoException.creditoNaoEncontrado(numeroCredito);
-                });
+        List<Credito> creditos = creditoRepository.findByNumeroCredito(numeroNormalizado);
+
+        if (creditos.isEmpty()) {
+            LoggingUtils.logNenhumResultado(logger, "número do crédito", numeroCredito);
+            throw CreditoException.creditoNaoEncontrado(numeroCredito);
+        }
+
+        // Se houver múltiplos, retorna o primeiro (mais antigo por ID)
+        if (creditos.size() > 1) {
+            logger.warn("Múltiplos créditos encontrados para número {}: {} registros. Retornando o primeiro.",
+                    numeroCredito, creditos.size());
+        }
+
+        return creditos.get(0);
     }
 
     /**
@@ -533,11 +543,12 @@ public class CreditoService {
         private BigDecimal valorTotal;
         private BigDecimal valorMedio;
 
-        public EstatisticasPorTipo(String tipoCredito, Long quantidade, BigDecimal valorTotal, BigDecimal valorMedio) {
+
+        public EstatisticasPorTipo(String tipoCredito, Long quantidade, BigDecimal valorTotal, Double valorMedio) {
             this.tipoCredito = tipoCredito;
             this.quantidade = quantidade;
             this.valorTotal = valorTotal;
-            this.valorMedio = valorMedio;
+            this.valorMedio = valorMedio != null ? BigDecimal.valueOf(valorMedio) : BigDecimal.ZERO;
         }
 
         // Getters e Setters

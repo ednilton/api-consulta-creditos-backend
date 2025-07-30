@@ -16,7 +16,7 @@
     <artifactId>consulta-creditos-api</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>consulta-creditos-api</name>
+    <name>api-consulta-creditos-backend</name>
     <description>API REST para consulta de créditos constituídos ISSQN - Desafio Gestiona Tecnologia</description>
 
     <properties>
