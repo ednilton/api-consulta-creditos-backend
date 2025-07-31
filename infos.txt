@@ -1,0 +1,43 @@
+
+
+
+# Derrubando o container:
+docker-compose down -v
+
+# Exibindo logs:
+docker-compose logs -f
+
+# Subindo o container:
+docker-compose --profile full-stack up --build -d
+ ou
+docker-compose up -d
+
+# Localizando arquivo para dropar o banco:
+Database/drop-db.sh
+
+# Atribuindo permissão ao arquivo:
+chmod +x drop-db.sh
+
+# Executando o arquivo:
+./drop-db.sh
+
+# TESTES
+
+# Rodando os testes
+mvn clean test
+
+# Rodando o relatório:
+mvn clean test jacoco:report
+
+# Rodando script para povoar o banco de testes
+
+# Atribuindo permissões
+$ chmod +x populate-test-db.sh
+
+# Executando arquivo
+./populate-test-db.sh
+
+# Acessando o banco de dados de teste para verificar o funcionamento do script
+docker exec -it creditos-postgres-test psql -U creditos_user -d creditos_db_test
+
+
